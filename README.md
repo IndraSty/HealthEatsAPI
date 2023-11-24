@@ -1,3 +1,5 @@
 # HealthEatsAPI
 
 ## Introduction
+
+## Users
