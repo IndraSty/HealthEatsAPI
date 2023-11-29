@@ -13,44 +13,44 @@ model diseases {
   id_food         Int?
   description     String?           @db.Text
   foods           foods?            @relation(fields: [id_food], references: [id_food], onDelete: NoAction, onUpdate: NoAction, map: "diseases_ibfk_1")
-  recommendations recommendations[] @ignore
+  recommendations recommendations[]
 
   @@index([id_food], map: "id_food")
 }
 
 model foods {
   id_food     Int        @id @default(autoincrement())
-  food_name   String?    @db.VarChar(100)
+  food_name   String    @db.VarChar(100)
   ingredients String?    @db.Text
   steps       String?    @db.Text
   image       String?    @db.VarChar(200)
   diseases    diseases[]
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model recommendations {
-  id_recommendation Int?
-  id_user           Int?
-  id_disease        Int?
+  id_recommendation Int @id @default(autoincrement())
+  id_user           Int
+  id_disease        Int
   time              DateTime? @db.DateTime(0)
   users             users?    @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
   diseases          diseases? @relation(fields: [id_disease], references: [id_disease], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
 
   @@index([id_disease], map: "id_disease")
   @@index([id_user], map: "id_user")
-  @@ignore
 }
+
 
 model users {
   id_user         Int               @id @default(autoincrement())
-  name            String?           @db.VarChar(30)
-  email           Bytes?            @db.VarBinary(30)
-  password        String?           @db.VarChar(20)
+  name            String           @db.VarChar(200)
+  email           String           @db.VarChar(200)
+  password        String           @db.VarChar(100)
   born            DateTime?         @db.Date
   phone           Int?
   image           String?           @db.VarChar(200)
   token           String?           @db.VarChar(300)
-  updateat        DateTime?         @db.DateTime(0)
-  createat        DateTime?         @db.DateTime(0)
-  recommendations recommendations[] @ignore
+  updateat        DateTime?         @updatedAt @default(now())
+  createat        DateTime?         @default(now())
+  recommendations recommendations[] 
 }
+
