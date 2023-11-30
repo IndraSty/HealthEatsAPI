@@ -3,7 +3,7 @@ import userController from "../controller/user-controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { updateToken } from "../controller/updateToken.js";
 
-const routes = express.Router();
+export const routes = express.Router();
 
 routes.post('/register', createUser)
 
@@ -17,4 +17,3 @@ routes.get('/users/token', updateToken)
 routes.get('/users/current', authMiddleware, userController.getUser);
 routes.delete('/users/logout', authMiddleware, userController.logout);
 
-export default routes
