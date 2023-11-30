@@ -20,7 +20,7 @@ model diseases {
 
 model foods {
   id_food     Int        @id @default(autoincrement())
-  food_name   String    @db.VarChar(100)
+  food_name   String     @db.VarChar(100)
   ingredients String?    @db.Text
   steps       String?    @db.Text
   image       String?    @db.VarChar(200)
@@ -28,10 +28,10 @@ model foods {
 }
 
 model recommendations {
-  id_recommendation Int @id @default(autoincrement())
+  id_recommendation Int       @id @default(autoincrement())
   id_user           Int
   id_disease        Int
-  time              DateTime? @db.DateTime(0)
+  time              DateTime @default(now())
   users             users?    @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
   diseases          diseases? @relation(fields: [id_disease], references: [id_disease], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
 
@@ -39,18 +39,16 @@ model recommendations {
   @@index([id_user], map: "id_user")
 }
 
-
 model users {
   id_user         Int               @id @default(autoincrement())
-  name            String           @db.VarChar(200)
-  email           String           @db.VarChar(200)
-  password        String           @db.VarChar(100)
+  name            String            @db.VarChar(200)
+  email           String            @db.VarChar(200)
+  password        String            @db.VarChar(100)
   born            DateTime?         @db.Date
-  phone           Int?
+  phone           Int?              
   image           String?           @db.VarChar(200)
-  token           String?           @db.VarChar(300)
-  updateat        DateTime?         @updatedAt @default(now())
-  createat        DateTime?         @default(now())
-  recommendations recommendations[] 
+  refreshToken    String?           @db.VarChar(300)
+  updated_at      DateTime         @default(now()) @updatedAt
+  created_at      DateTime         @default(now())
+  recommendations recommendations[]
 }
-
