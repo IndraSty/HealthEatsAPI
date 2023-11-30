@@ -7,6 +7,7 @@ const isValidGmail = (email) => {
   const gmailRegex = /^[a-zA-Z0-9._-]+@gmail.com$/;
   return gmailRegex.test(email);
 }
+
 // register 
 const createUser = async (req, res, next) => {
   const { name, email, password, confirmPassword } = req.body
@@ -53,6 +54,7 @@ const createUser = async (req, res, next) => {
   next()
 };
 
+//Login
 const login = async (req, res, next) => {
   try {
     const user = await prisma.users.findFirst({
