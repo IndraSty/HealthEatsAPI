@@ -1,5 +1,6 @@
 import { prisma } from "../application/database.js";
 import bcrypt from "bcrypt"
+import {response, responseError} from "../response/response.js";
 
 // fungsi validasi email harus dengan akhiran @gmail.com
 const isValidGmail = (email) =>{
@@ -10,7 +11,6 @@ const isValidGmail = (email) =>{
 export const createUser = async (req, res, next) => {
   const {name, email, password} = req.body
   try {
-    console.log(name, email, password)
     // cek pada database apakah email sudah tersedia
     const emailExist = await prisma.users.count({
       where: {
@@ -19,10 +19,10 @@ export const createUser = async (req, res, next) => {
     })
     const validEmail = isValidGmail(email)
     if (!validEmail) {
-      return res.status(400).json({message: "Email must end with @gmail.com domain"})
+      return responseError(400, "Email must end with @gmail.com domain", res)
     }
     if (emailExist === 1) {
-      return res.status(400).json({message: "Email already exist"})
+      return responseError(400, "Email already exist", res)
     }
     const saltRounds = 10
     const salt = await bcrypt.genSalt(saltRounds)
@@ -34,9 +34,9 @@ export const createUser = async (req, res, next) => {
         password: hashedPassword,
       }
     })
-    res.status(201).json(user)
+    response(201, user, "Register Success", res)
   } catch (error) {
-    res.status(400)
+    responseError(400, error, res)
     console.log(error)
   }
   next()
