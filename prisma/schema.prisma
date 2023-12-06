@@ -10,32 +10,29 @@ datasource db {
 model diseases {
   id_disease      Int               @id
   name            String?           @db.VarChar(100)
-  id_food         Int?
   description     String?           @db.Text
-  foods           foods?            @relation(fields: [id_food], references: [id_food], onDelete: NoAction, onUpdate: NoAction, map: "diseases_ibfk_1")
-  recommendations recommendations[]
-
-  @@index([id_food], map: "id_food")
+  details_disease details_disease[]
 }
 
 model foods {
-  id_food     Int        @id @default(autoincrement())
-  food_name   String     @db.VarChar(100)
-  ingredients String?    @db.Text
-  steps       String?    @db.Text
-  image       String?    @db.VarChar(200)
-  diseases    diseases[]
+  id_food         Int               @id @default(autoincrement())
+  food_name       String            @db.VarChar(100)
+  ingredients     String?           @db.Text
+  khasiat         String?           @db.Text
+  steps           String?           @db.Text
+  image           String?           @db.VarChar(200)
+  details_disease details_disease[]
 }
 
 model recommendations {
-  id_recommendation Int       @id @default(autoincrement())
+  id_recommendation Int              @id @default(autoincrement())
   id_user           Int
-  id_disease        Int
-  time              DateTime @default(now())
-  users             users?    @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
-  diseases          diseases? @relation(fields: [id_disease], references: [id_disease], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
+  id_details        Int
+  time              DateTime         @default(now())
+  users             users?           @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
+  details_disease   details_disease? @relation(fields: [id_details], references: [id_details], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
 
-  @@index([id_disease], map: "id_disease")
+  @@index([id_details], map: "id_details")
   @@index([id_user], map: "id_user")
 }
 
@@ -45,10 +42,19 @@ model users {
   email           String            @db.VarChar(200)
   password        String            @db.VarChar(100)
   born            DateTime?         @db.Date
-  phone           Int?              
+  phone           Int?
   image           String?           @db.VarChar(200)
   refreshToken    String?           @db.VarChar(300)
-  updated_at      DateTime         @default(now()) @updatedAt
-  created_at      DateTime         @default(now())
+  updated_at      DateTime          @default(now()) @updatedAt
+  created_at      DateTime          @default(now())
+  recommendations recommendations[]
+}
+
+model details_disease {
+  id_details      Int               @id @default(autoincrement())
+  id_disease      Int
+  id_food         Int
+  diseases        diseases          @relation(fields: [id_disease], references: [id_disease])
+  foods           foods             @relation(fields: [id_food], references: [id_food])
   recommendations recommendations[]
 }
