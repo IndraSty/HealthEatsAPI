@@ -10,7 +10,7 @@ const isValidGmail = (email) => {
 
 // register 
 const createUser = async (req, res, next) => {
-  const { name, email, password, confirmPassword } = req.body
+  const { name, email, password } = req.body
   try {
     // cek pada database apakah email sudah tersedia
     const emailExist = await prisma.users.count({
@@ -26,7 +26,6 @@ const createUser = async (req, res, next) => {
       return responseError(400, "Email already exist", res)
     }
 
-    if(password !== confirmPassword) return res.status(400).json({errors: "Password and Confirm Password not match"})
     const saltRounds = 10
     const salt = await bcrypt.genSalt(saltRounds)
     const hashedPassword = await bcrypt.hash(password, salt)
