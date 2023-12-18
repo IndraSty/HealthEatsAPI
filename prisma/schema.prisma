@@ -18,19 +18,20 @@ model foods {
   id_food         Int               @id @default(autoincrement())
   food_name       String            @db.VarChar(100)
   ingredients     String?           @db.Text
-  khasiat         String?           @db.Text
   steps           String?           @db.Text
   image           String?           @db.VarChar(200)
+  khasiat         String?           @db.Text
+  deskripsi       String?           @db.Text
   details_disease details_disease[]
 }
 
 model recommendations {
-  id_recommendation Int              @id @default(autoincrement())
+  id_recommendation Int             @id @default(autoincrement())
   id_user           Int
+  time              DateTime        @default(now())
   id_details        Int
-  time              DateTime         @default(now())
-  users             users?           @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
-  details_disease   details_disease? @relation(fields: [id_details], references: [id_details], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
+  users             users           @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
+  details_disease   details_disease @relation(fields: [id_details], references: [id_details], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
 
   @@index([id_details], map: "id_details")
   @@index([id_user], map: "id_user")
@@ -57,4 +58,7 @@ model details_disease {
   diseases        diseases          @relation(fields: [id_disease], references: [id_disease])
   foods           foods             @relation(fields: [id_food], references: [id_food])
   recommendations recommendations[]
+
+  @@index([id_disease], map: "details_disease_id_disease_fkey")
+  @@index([id_food], map: "details_disease_id_food_fkey")
 }
