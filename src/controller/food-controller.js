@@ -151,8 +151,6 @@ const predictionAndRecommendations = async (req, res) => {
             }
         });
 
-
-
         const recomen = await prisma.recommendations.create({
             data: {
                 id_user: userId,
@@ -161,6 +159,8 @@ const predictionAndRecommendations = async (req, res) => {
         });
 
         const deTailsid = result.map((idDetails) => idDetails.id_details);
+
+        console.log(deTailsid)
 
         for (let index = 0; index < deTailsid.length; index++) {
             try {
@@ -176,59 +176,40 @@ const predictionAndRecommendations = async (req, res) => {
 
         }
 
-        if (prediksi === "Sehat") {
-            const foods = await prisma.foods.findMany({
-                where: {
-                    food_name: {
-                        not: ""
-                    }
+        const foods = await prisma.foods.findMany({
+            where: {
+                food_name: {
+                    not: ""
                 }
-            });
-
-            for (let i = 11; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [foods[i], foods[j]] = [foods[j], foods[i]]
             }
+        });
 
-            const randomFood = foods.slice(0, 6)
-
-            const deTailsid = result.map((idDetails) => idDetails.id_details);
-
-            for (let index = 0; index < deTailsid.length; index++) {
-                try {
-                    await prisma.details_recommendations.create({
-                        data: {
-                            id_recommendation: recomen.id_recommendation,
-                            id_details: deTailsid[index]
-                        }
-                    })
-                } catch (error) {
-                    console.log(error)
-                }
-
-            }
-
-            return res.status(200).json({
-                result: {
-                    message: "Sukses Melakukan Prediksi",
-                    penyakit: prediksi,
-                    persentase: `${maxVal.toFixed(2)}%`,
-                    description: disease.description,
-                    recommendations: randomFood
-                }
-            });
+        for (let i = 11; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [foods[i], foods[j]] = [foods[j], foods[i]]
         }
 
+        const randomFood = foods.slice(0, 6)
 
-        res.status(200).json({
+
+        prediksi === "Sehat" ? res.status(200).json({
             result: {
                 message: "Sukses Melakukan Prediksi",
                 penyakit: prediksi,
                 persentase: `${maxVal.toFixed(2)}%`,
                 description: disease.description,
-                recommendations: result
+                recommendations: randomFood
             }
-        });
+        }) :
+            res.status(200).json({
+                result: {
+                    message: "Sukses Melakukan Prediksi",
+                    penyakit: prediksi,
+                    persentase: `${maxVal.toFixed(2)}%`,
+                    description: disease.description,
+                    recommendations: result
+                }
+            });
     } catch (err) {
         console.error('Error during prediction', err);
         res.status(500).json({ error: 'An error occurred during prediction' });
