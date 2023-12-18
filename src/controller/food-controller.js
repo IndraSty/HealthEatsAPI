@@ -1,6 +1,8 @@
 import * as tf from "@tensorflow/tfjs-node";
 import { prisma } from "../application/database.js";
 
+
+
 const getFoods = async (req, res, next) => {
     const page = parseInt(req.query.page) || 0
     const limit = parseInt(req.query.limit) || 10
@@ -103,7 +105,8 @@ const predictionAndRecommendations = async (req, res) => {
 
     async function loadModel() {
         try {
-            const model = await tf.loadLayersModel("file://D:/bangkit/capstone/backend/src/models/model.json");
+            const model = await tf.loadLayersModel("https://storage.googleapis.com/healtheats-dev-bucket/models/model.json");
+            console.log('Model loaded successfully');
             return model;
         } catch (err) {
             console.error('Error loading model', err);
@@ -173,7 +176,7 @@ const predictionAndRecommendations = async (req, res) => {
 
         }
 
-        if(prediksi === "Sehat"){
+        if (prediksi === "Sehat") {
             const foods = await prisma.foods.findMany({
                 where: {
                     food_name: {
@@ -181,13 +184,29 @@ const predictionAndRecommendations = async (req, res) => {
                     }
                 }
             });
-    
-            for (let i = 11; i > 0 ; i--) {
+
+            for (let i = 11; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [foods[i], foods[j]] = [foods[j], foods[i]]
             }
-    
+
             const randomFood = foods.slice(0, 6)
+
+            const deTailsid = result.map((idDetails) => idDetails.id_details);
+
+            for (let index = 0; index < deTailsid.length; index++) {
+                try {
+                    await prisma.details_recommendations.create({
+                        data: {
+                            id_recommendation: recomen.id_recommendation,
+                            id_details: deTailsid[index]
+                        }
+                    })
+                } catch (error) {
+                    console.log(error)
+                }
+
+            }
 
             return res.status(200).json({
                 result: {
@@ -199,7 +218,7 @@ const predictionAndRecommendations = async (req, res) => {
                 }
             });
         }
-        
+
 
         res.status(200).json({
             result: {
