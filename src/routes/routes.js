@@ -16,6 +16,7 @@ routes.get('/users/token', updateToken)
 routes.get('/users/current', authMiddleware, userController.getUser);
 routes.delete('/users/logout', authMiddleware, userController.logout);
 routes.get('/foods/random', authMiddleware, foodController.getRandomFood);
+routes.get('/foods/search', authMiddleware, foodController.getFoods);
 routes.get('/foods/:foodId', authMiddleware, foodController.getFoodById);
-routes.post('/users/predictions', foodController.predictionAndRecommendations);
+routes.post('/predictions', authMiddleware, foodController.predictionAndRecommendations);
 
