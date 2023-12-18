@@ -99,6 +99,7 @@ const getFoodById = async (req, res, next) => {
 
 const predictionAndRecommendations = async (req, res) => {
     const jawaban = req.body.input_data;
+    const userId = req.userId;
 
     async function loadModel() {
         try {
@@ -119,7 +120,7 @@ const predictionAndRecommendations = async (req, res) => {
         const maxVal = output.max().dataSync()[0] * 100;
 
         //   output.print();
-        const penyakit = ['Tidak', 'Stroke', 'Hepatitis'];
+        const penyakit = ['Sehat', 'Stroke', 'Hepatitis'];
         const prediksi = penyakit[predictionIndex];
 
         const disease = await prisma.diseases.findUnique({
@@ -133,23 +134,73 @@ const predictionAndRecommendations = async (req, res) => {
 
         const result = await prisma.details_disease.findMany({
             where: {
-              id_disease: predictionIndex
+                id_disease: predictionIndex
             },
             select: {
-              id_details: true,
-              id_disease: true,
-              foods: {
-                select: {
-                  food_name: true,
-                  image: true
-                }
-              },
+                id_details: true,
+                id_disease: true,
+                foods: {
+                    select: {
+                        food_name: true,
+                        image: true
+                    }
+                },
             }
-          });
+        });
+
+
+
+        const recomen = await prisma.recommendations.create({
+            data: {
+                id_user: userId,
+
+            }
+        });
+
+        const deTailsid = result.map((idDetails) => idDetails.id_details);
+
+        for (let index = 0; index < deTailsid.length; index++) {
+            try {
+                await prisma.details_recommendations.create({
+                    data: {
+                        id_recommendation: recomen.id_recommendation,
+                        id_details: deTailsid[index]
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+
+        }
+
+        if(prediksi === "Sehat"){
+            const foods = await prisma.foods.findMany({
+                where: {
+                    food_name: {
+                        not: ""
+                    }
+                }
+            });
+    
+            for (let i = 11; i > 0 ; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [foods[i], foods[j]] = [foods[j], foods[i]]
+            }
+    
+            const randomFood = foods.slice(0, 6)
+
+            return res.status(200).json({
+                result: {
+                    message: "Sukses Melakukan Prediksi",
+                    penyakit: prediksi,
+                    persentase: `${maxVal.toFixed(2)}%`,
+                    description: disease.description,
+                    recommendations: randomFood
+                }
+            });
+        }
         
-        //   console.log(result.map((item) => item.foods.food_name))
-        //   console.log(`Prediksi model: ${prediksi}`);
-        //   console.log(`Persentase: ${maxVal.toFixed(2)}%`);
+
         res.status(200).json({
             result: {
                 message: "Sukses Melakukan Prediksi",
