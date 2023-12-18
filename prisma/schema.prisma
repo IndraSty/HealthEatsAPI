@@ -26,14 +26,12 @@ model foods {
 }
 
 model recommendations {
-  id_recommendation Int             @id @default(autoincrement())
-  id_user           Int
-  time              DateTime        @default(now())
-  id_details        Int
-  users             users           @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
-  details_disease   details_disease @relation(fields: [id_details], references: [id_details], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_2")
+  id_recommendation       Int                       @id @default(autoincrement())
+  id_user                 Int
+  time                    DateTime                  @default(now())
+  details_recommendations details_recommendations[]
+  users                   users                     @relation(fields: [id_user], references: [id_user], onDelete: NoAction, onUpdate: NoAction, map: "recommendations_ibfk_1")
 
-  @@index([id_details], map: "id_details")
   @@index([id_user], map: "id_user")
 }
 
@@ -52,13 +50,24 @@ model users {
 }
 
 model details_disease {
-  id_details      Int               @id @default(autoincrement())
-  id_disease      Int
-  id_food         Int
-  diseases        diseases          @relation(fields: [id_disease], references: [id_disease])
-  foods           foods             @relation(fields: [id_food], references: [id_food])
-  recommendations recommendations[]
+  id_details              Int                       @id @default(autoincrement())
+  id_disease              Int
+  id_food                 Int
+  diseases                diseases                  @relation(fields: [id_disease], references: [id_disease])
+  foods                   foods                     @relation(fields: [id_food], references: [id_food])
+  details_recommendations details_recommendations[]
 
   @@index([id_disease], map: "details_disease_id_disease_fkey")
   @@index([id_food], map: "details_disease_id_food_fkey")
+}
+
+model details_recommendations {
+  id_details_recommendation Int              @id @default(autoincrement())
+  id_recommendation         Int?
+  id_details                Int?
+  recommendations           recommendations? @relation(fields: [id_recommendation], references: [id_recommendation], onDelete: NoAction, onUpdate: NoAction, map: "details_recommendations_ibfk_1")
+  details_disease           details_disease? @relation(fields: [id_details], references: [id_details], onDelete: NoAction, onUpdate: NoAction, map: "details_recommendations_ibfk_2")
+
+  @@index([id_details], map: "id_details")
+  @@index([id_recommendation], map: "id_recommendation")
 }
