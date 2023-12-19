@@ -160,19 +160,15 @@ const predictionAndRecommendations = async (req, res) => {
 
         const deTailsid = result.map((idDetails) => idDetails.id_details);
 
-        console.log(deTailsid)
+        for (let index = 0; prediksi === "Sehat" ? index < 7 : index < deTailsid.length; index++) {
+            await prisma.details_recommendations.create({
+                data: {
+                    id_recommendation: recomen.id_recommendation,
+                    id_details: deTailsid[index]
+                }
+            })
+            // console.log(deTailsid[index])
 
-        for (let index = 0; index < prediksi === "Sehat" ? 7 : deTailsid.length; index++) {
-            try {
-                await prisma.details_recommendations.create({
-                    data: {
-                        id_recommendation: recomen.id_recommendation,
-                        id_details: deTailsid[index]
-                    }
-                })
-            } catch (error) {
-                console.log(error)
-            }
 
         }
 
