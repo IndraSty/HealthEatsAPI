@@ -162,7 +162,7 @@ const predictionAndRecommendations = async (req, res) => {
 
         console.log(deTailsid)
 
-        for (let index = 0; index < deTailsid.length; index++) {
+        for (let index = 0; index < prediksi === "Sehat" ? 7 : deTailsid.length; index++) {
             try {
                 await prisma.details_recommendations.create({
                     data: {
