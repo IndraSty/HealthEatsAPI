@@ -127,7 +127,7 @@ const predictionAndRecommendations = async (req, res) => {
 
     async function loadModel() {
         try {
-            const model = await tf.loadLayersModel("https://storage.googleapis.com/healtheats-dev-bucket/models/model.json");
+            const model = await tf.loadLayersModel("../model/model.json");
             console.log('Model loaded successfully');
             return model;
         } catch (err) {
