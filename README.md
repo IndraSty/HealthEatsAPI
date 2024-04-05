@@ -17,9 +17,9 @@ Member:
 To run this Application in your local machine, follow these steps:
 Clone the repository to your machine and install the needed dependencies. We use `npm` to manage our packages, so please make sure it is installed in your local machine.
 ```bash
-git clone https://github.com/IndraSty/nustaravel.git
+git clone https://github.com/IndraSty/HealthEatsAPI.git healtheats
 
-cd nustaravel
+cd healtheats
 
 npm install
 ```
@@ -38,5 +38,5 @@ Import data from the `/data` folder to your database. We recommend using a GUI l
 
 Run the Application in your local machine
 ```bash
-npm run dev
+npm start
 ```
