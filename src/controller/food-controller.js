@@ -1,7 +1,6 @@
+// import * as tf from "@tensorflow/tfjs-node";
 import * as tf from "@tensorflow/tfjs-node";
 import { prisma } from "../application/database.js";
-
-
 
 const getFoods = async (req, res, next) => {
     const page = parseInt(req.query.page) || 0
@@ -41,6 +40,7 @@ const getFoods = async (req, res, next) => {
 
 const getRandomFood = async (req, res, next) => {
     try {
+        const userId = req.userId;
         const foods = await prisma.foods.findMany({
             where: {
                 food_name: {
@@ -49,6 +49,16 @@ const getRandomFood = async (req, res, next) => {
             },
             orderBy: {
                 id_food: "asc"
+            },
+            include: {
+                favorite: {
+                    where: {
+                        id_user: userId
+                    },
+                    select: {
+                        isFavorite: true
+                    }
+                }
             }
         });
 
@@ -72,6 +82,7 @@ const getRandomFood = async (req, res, next) => {
 const getFoodById = async (req, res, next) => {
     try {
         const foodId = parseInt(req.params.foodId);
+        const userId = req.userId;
 
         const checkFoodId = await prisma.foods.count({
             where: {
@@ -85,6 +96,16 @@ const getFoodById = async (req, res, next) => {
         const food = await prisma.foods.findUnique({
             where: {
                 id_food: foodId
+            },
+            include: {
+                favorite: {
+                    where: {
+                        id_user: userId
+                    },
+                    select: {
+                        isFavorite: true
+                    }
+                }
             }
         });
 
@@ -102,6 +123,7 @@ const getFoodById = async (req, res, next) => {
 const predictionAndRecommendations = async (req, res) => {
     const jawaban = req.body.input_data;
     const userId = req.userId;
+    console.log(userId)
 
     async function loadModel() {
         try {
@@ -123,7 +145,7 @@ const predictionAndRecommendations = async (req, res) => {
         const maxVal = output.max().dataSync()[0] * 100;
 
         //   output.print();
-        const penyakit = ['Sehat', 'Stroke', 'Hepatitis'];
+        const penyakit = ['Sehat', 'Stroke', 'Hipertensi'];
         const prediksi = penyakit[predictionIndex];
 
         const disease = await prisma.diseases.findUnique({
@@ -154,14 +176,15 @@ const predictionAndRecommendations = async (req, res) => {
         const recomen = await prisma.recommendations.create({
             data: {
                 id_user: userId,
-
-            }
+            },
+            
         });
 
         const deTailsid = result.map((idDetails) => idDetails.id_details);
+        console.log(deTailsid)
 
         for (let index = 0; prediksi === "Sehat" ? index < 7 : index < deTailsid.length; index++) {
-            await prisma.details_recommendations.create({
+            await prisma.detail_recommendations.create({
                 data: {
                     id_recommendation: recomen.id_recommendation,
                     id_details: deTailsid[index]
@@ -212,9 +235,161 @@ const predictionAndRecommendations = async (req, res) => {
     }
 }
 
+const getAllFoods = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const foods = await prisma.foods.findMany({
+            where: {
+                food_name: {
+                    not: ""
+                }
+            },
+            orderBy: {
+                id_food: "asc"
+            },
+            include: {
+                favorite: {
+                    where: {
+                        id_user: userId
+                    },
+                    select: {
+                        isFavorite: true
+                    }
+                }
+            }
+        });
+
+        console.log(foods.length)
+
+        return res.status(200).json({
+            result: foods
+        })
+    } catch (error) {
+        res.status(404).json({
+            msg: "No Foods Can Display"
+        });
+    }
+}
+
+const addFavorite = async (req, res, next) => {
+    try {
+        const foodId = parseInt(req.params.foodId);
+        const userId = req.userId;
+
+        const user = await prisma.users.findUnique({
+            where: {
+                id_user: userId
+            }
+        });
+
+        if (user) {
+            const result = await prisma.favorite.create({
+                data: {
+                    id_user: userId,
+                    id_food: foodId
+                }
+            });
+
+            return res.status(200).json({
+                result
+            })
+        } else {
+            res.status(404).json({
+                msg: "User Not Found!"
+            });
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: "Something went wrong while add favorite"
+        });
+    }
+}
+
+const rmFavorite = async (req, res, next) => {
+    try {
+        const foodId = parseInt(req.params.foodId);
+        const userId = req.userId;
+
+        const user = await prisma.users.findUnique({
+            where: {
+                id_user: userId
+            }
+        });
+
+        if (user) {
+            const favorite = await prisma.favorite.findFirst({
+                where: {
+                    id_food: foodId,
+                    id_user: userId
+                }
+            });
+
+            if (favorite) {
+                await prisma.favorite.delete({
+                    where: {
+                        id: favorite.id
+                    }
+                })
+
+                return res.status(200).json({
+                    message: "Success Remove from Favorite"
+                })
+            } else {
+                res.status(404).json({
+                    msg: "Favorite Id Not Found!"
+                });
+            }
+        } else {
+            res.status(404).json({
+                msg: "User Not Found!"
+            });
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: "Something went wrong while remove favorite"
+        });
+    }
+}
+
+const getAllFavorite = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const favorite = await prisma.favorite.findMany({
+            where: {
+                id_user: userId
+            },
+            include: {
+                foods: true
+            }
+        });
+
+        if (favorite.length > 0) {
+            res.status(200).json({
+                result: favorite
+            })
+        } else {
+            res.status(404).json({
+                msg: "No Favorite item Can Display"
+            });
+        }
+
+    } catch (error) {
+        res.status(500).json({
+            msg: "Something went wrong while get favorite"
+        });
+    }
+}
+
+
 export default {
     getFoods,
     getRandomFood,
     getFoodById,
-    predictionAndRecommendations
+    predictionAndRecommendations,
+    getAllFoods,
+    addFavorite,
+    rmFavorite,
+    getAllFavorite
 }

@@ -1,3 +1,5 @@
 node_modules
 # Keep environment variables out of version control
 prisma/migrations/
+healtheats-dev-470d3651b81c.json
+.env

@@ -1,7 +1,25 @@
 import { prisma } from "../application/database.js";
 import bcrypt from "bcrypt";
+import { Storage } from "@google-cloud/storage";
+import { fileURLToPath } from 'url';
+import { dirname } from "path";
+import path from "path";
+import util from "util"
 import jwt from "jsonwebtoken";
+
 import { response, responseError } from "../response/response.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const gc = new Storage({
+  keyFilename: path.join(__dirname, "../../healtheats-dev-470d3651b81c.json"),
+  projectId: 'healtheats-dev'
+});
+
+const healtheatsBucket = gc.bucket('healtheats-dev-bucket');
+
+
 
 const isValidGmail = (email) => {
   const gmailRegex = /^[a-zA-Z0-9._-]+@gmail.com$/;
@@ -10,6 +28,7 @@ const isValidGmail = (email) => {
 
 // register 
 const createUser = async (req, res, next) => {
+
   const { name, email, password } = req.body
   try {
     // cek pada database apakah email sudah tersedia
@@ -137,7 +156,7 @@ const logout = async (req, res, next) => {
   try {
     const userId = req.userId;
     const refreshToken = req.cookies.refreshToken;
-    if(!refreshToken) return res.sendStatus(204);
+    if (!refreshToken) return res.sendStatus(204);
     await prisma.users.update({
       where: {
         id_user: userId
@@ -149,7 +168,7 @@ const logout = async (req, res, next) => {
     res.clearCookie('refreshToken');
     return res.status(200).json({
       message: "Logout Berhasil"
-  });
+    });
   } catch (error) {
     res.status(404).json({
       errors: "User Id is not found!"
@@ -157,9 +176,72 @@ const logout = async (req, res, next) => {
   }
 }
 
+const updateuser = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const fileName = req.file;
+    const { name } = req.body;
+
+    // Create a new blob in the bucket and upload the file data
+    const blob = healtheatsBucket.file(`image-users/${fileName.originalname}`);
+    const blobStream = blob.createWriteStream();
+    
+    blobStream.on('error', err => {
+      console.error(err);
+      res.status(500).json({ errors: "Error uploading file!" });
+    });
+
+    blobStream.on('finish', async () => {
+      // The file upload is complete
+      const publicUrl = util.format(
+        `https://storage.googleapis.com/${healtheatsBucket.name}/${blob.name}`
+      );
+
+      // Make the file public
+      await blob.makePublic();
+
+      const user = await prisma.users.count({
+        where: {
+          id_user: userId
+        }
+      });
+
+      if (user != 0) {
+        await prisma.users.update({
+          where: {
+            id_user: userId
+          },
+          data: {
+            name: name,
+            image: publicUrl
+          }
+        });
+
+        return res.status(200).json({
+          message: "Update User Data Berhasil"
+        });
+      } else {
+        res.status(404).json({
+          errors: "User Id is not found!"
+        });
+      }
+    });
+
+    blobStream.end(req.file.buffer);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      errors: "Something went wrong while update users!"
+    });
+  }
+}
+
+
+
 export default {
   createUser,
   login,
   getUser,
-  logout
+  logout,
+  updateuser
 };
