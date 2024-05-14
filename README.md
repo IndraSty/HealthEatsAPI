@@ -1,5 +1,6 @@
 # HealthEatsAPI
 This project implement RestFul API architecture with Node.Js Express Library, Prisma ORM and MySQL for the DBMS. Beside that in authentication also used JWT(JSON Web Token) as the technology.
+This API has been implemented on Google Cloud Platform and will be retired on Jan 14, 2024 https://backend-dot-healtheats-dev.et.r.appspot.com
 
 ### Documentation
 Checkout the documentation -> [API Documentation](https://documenter.getpostman.com/view/29695288/2s9YkobgDu)
